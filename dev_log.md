@@ -13,3 +13,6 @@
 
 ## 2025-10-27T09:23:30
 - improved readability
+
+## 2025-11-28T18:40:07
+- fixed edge case
