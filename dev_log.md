@@ -16,3 +16,6 @@
 
 ## 2025-11-28T18:40:07
 - fixed edge case
+
+## 2025-12-23T19:14:06
+- reviewed logic
