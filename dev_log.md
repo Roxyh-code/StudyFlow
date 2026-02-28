@@ -6,3 +6,4 @@
 2025-09-26T17:53:46 - updated README
 2025-11-10T15:57:37 - cleaned up imports
 2025-12-23T22:56:07 - updated variable names
+2026-02-28T09:53:18 - optimized loop
