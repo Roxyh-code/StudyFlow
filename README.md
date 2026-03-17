@@ -153,6 +153,3 @@ Built as a high-fidelity interactive prototype for **CSC318 — Design of Intera
 
 ---
 
-## Author
-
-Yang Liu · yang.liu@mail.utoronto.ca
