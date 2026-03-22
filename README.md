@@ -2,6 +2,7 @@
 
 An intelligent adaptive workload planning system built for university students. StudyFlow goes beyond a simple calendar — it automatically schedules study sessions around existing commitments, respects personal preferences, tracks real work time, and helps rebalance when life gets busy.
 
+Demo: https://study-flow-liard.vercel.app/
 ---
 
 ## Features
