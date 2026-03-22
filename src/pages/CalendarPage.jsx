@@ -179,7 +179,7 @@ function DayColumn({ date, isToday, blocks, onEdit, onMarkStatus }) {
 }
 
 export default function CalendarPage({ onAddTask }) {
-  const { blocks, tasks, weekOffset, setWeekOffset, currentWeekStart, currentWeekDates } = useApp();
+  const { blocks, tasks, weekOffset, setWeekOffset, currentWeekStart, currentWeekDates, studyPreferences, applyPreferencesAndReschedule } = useApp();
   const [editingBlock, setEditingBlock] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [completionBlock, setCompletionBlock] = useState(null);
@@ -257,9 +257,26 @@ export default function CalendarPage({ onAddTask }) {
           )}
         </div>
 
-        <button onClick={onAddTask} className="btn-primary w-full text-xs py-2">
-          <Icons.Plus className="w-3.5 h-3.5" /> Add Task
-        </button>
+        {/* Max hours/day control */}
+        <div className="card p-3">
+          <p className="text-xs font-semibold text-gray-600 mb-2">Daily Limit</p>
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min="2"
+              max="12"
+              step="1"
+              value={studyPreferences.maxHoursPerDay}
+              onChange={e => applyPreferencesAndReschedule({ maxHoursPerDay: Number(e.target.value) })}
+              className="flex-1 accent-indigo-600"
+            />
+            <span className="text-sm font-bold text-indigo-600 w-10 text-right">
+              {studyPreferences.maxHoursPerDay}h
+            </span>
+          </div>
+          <p className="text-[10px] text-gray-400 mt-1">Max study hours per day</p>
+        </div>
+
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">

@@ -1,15 +1,15 @@
 import { Icons } from './Icons';
-import { courses } from '../data/mockData';
+import { useApp } from '../context/AppContext';
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard',  Icon: Icons.Grid },
-  { id: 'calendar',  label: 'Calendar',   Icon: Icons.Calendar },
-  { id: 'heatmap',   label: 'Workload',   Icon: Icons.BarChart },
-  { id: 'tasks',     label: 'Tasks',      Icon: Icons.CheckSquare },
-  { id: 'settings',  label: 'Settings',   Icon: Icons.Settings },
+  { id: 'calendar',   label: 'This Week',  Icon: Icons.Calendar },
+  { id: 'deadlines',  label: 'Deadlines',  Icon: Icons.CheckSquare },
+  { id: 'workload',   label: 'Workload',   Icon: Icons.BarChart },
 ];
 
 export default function Sidebar({ activePage, onNavigate }) {
+  const { courses } = useApp();
+
   return (
     <aside className="fixed left-0 top-0 h-full w-56 bg-white border-r border-gray-200 flex flex-col z-30 shadow-sm">
       {/* Logo */}
@@ -54,8 +54,19 @@ export default function Sidebar({ activePage, onNavigate }) {
         </div>
       </nav>
 
-      {/* User */}
-      <div className="px-3 py-3 border-t border-gray-100">
+      {/* Bottom: Settings + User */}
+      <div className="px-3 py-3 border-t border-gray-100 space-y-1">
+        <button
+          onClick={() => onNavigate('settings')}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+            activePage === 'settings'
+              ? 'bg-indigo-50 text-indigo-700'
+              : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+          }`}
+        >
+          <Icons.Settings className="w-3.5 h-3.5 flex-shrink-0" />
+          Settings
+        </button>
         <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-gray-50 cursor-pointer">
           <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
             <span className="text-xs font-bold text-indigo-700">Y</span>

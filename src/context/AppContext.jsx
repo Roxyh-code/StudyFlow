@@ -8,12 +8,12 @@ import { placeBlocksWithoutOverlap, findFreeSlotsForDay } from '../utils/schedul
 const BASE_MONDAY = '2026-03-16';
 
 export const DEFAULT_PREFERENCES = {
-  preferredStudyTime: 'morning', // 'morning' | 'afternoon' | 'evening' | 'balanced'
+  preferredStudyTime: 'morning',
   maxHoursPerDay: 6,
   avoidWeekends: false,
-  workloadStyle: 'balanced', // 'balanced' | 'focused' | 'early'
+  workloadStyle: 'balanced',
   breakBetweenSessions: 0.5,
-  taskTypeTime: {}, // e.g. { assignment: 'afternoon', project: 'evening', reading: 'morning' }
+  taskTypeTime: {},
 };
 
 function generateStudyBlocks(task, currentWeekStart, existingBlocks, preferences = DEFAULT_PREFERENCES) {
@@ -81,7 +81,6 @@ export function AppProvider({ children }) {
   const [tasks, setTasks] = useState(initialAssignments);
   const [weekOffset, setWeekOffset] = useState(0);
   const [studyPreferences, setStudyPreferences] = useState(DEFAULT_PREFERENCES);
-  const [timers, setTimers] = useState({}); // { [taskId]: { elapsed: 0, isRunning: false, startedAt: null } }
 
   const currentWeekStart = useMemo(() => addDays(BASE_MONDAY, weekOffset * 7), [weekOffset]);
   const currentWeekDates = useMemo(() => getWeekDates(currentWeekStart), [currentWeekStart]);
@@ -247,50 +246,6 @@ export function AppProvider({ children }) {
     setStudyPreferences(prev => ({ ...prev, ...changes }));
   }
 
-  // ── Timer actions ───────────────────────────────────────────────────────────
-
-  function startTimer(taskId) {
-    setTimers(prev => ({
-      ...prev,
-      [taskId]: {
-        elapsed: prev[taskId]?.elapsed || 0,
-        isRunning: true,
-        startedAt: Date.now(),
-      },
-    }));
-    // Mark task as in-progress when timer starts
-    updateTask(taskId, { status: 'in-progress' });
-  }
-
-  function pauseTimer(taskId) {
-    setTimers(prev => {
-      const timer = prev[taskId];
-      if (!timer?.isRunning) return prev;
-      const elapsed = timer.elapsed + (Date.now() - timer.startedAt) / 3600000;
-      return { ...prev, [taskId]: { elapsed, isRunning: false, startedAt: null } };
-    });
-  }
-
-  function stopTimer(taskId) {
-    setTimers(prev => {
-      const timer = prev[taskId];
-      if (!timer) return prev;
-      const elapsed = timer.isRunning
-        ? timer.elapsed + (Date.now() - timer.startedAt) / 3600000
-        : timer.elapsed;
-      return { ...prev, [taskId]: { elapsed, isRunning: false, startedAt: null, stopped: true } };
-    });
-  }
-
-  function getTrackedHours(taskId) {
-    const timer = timers[taskId];
-    if (!timer) return 0;
-    const elapsed = timer.isRunning
-      ? timer.elapsed + (Date.now() - timer.startedAt) / 3600000
-      : timer.elapsed;
-    return elapsed;
-  }
-
   const value = {
     courses,
     blocks,
@@ -301,7 +256,6 @@ export function AppProvider({ children }) {
     currentWeekDates,
     BASE_MONDAY,
     studyPreferences,
-    timers,
     addCourse,
     updateCourse,
     removeCourse,
@@ -315,10 +269,6 @@ export function AppProvider({ children }) {
     applyPreferencesAndReschedule,
     applyAISuggestion,
     updatePreferences,
-    startTimer,
-    pauseTimer,
-    stopTimer,
-    getTrackedHours,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
