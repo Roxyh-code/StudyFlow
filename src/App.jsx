@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { formatWeekRange } from './utils/dateUtils';
 import LoginPage from './pages/LoginPage';
+import HomePage from './pages/HomePage';
 import CalendarPage from './pages/CalendarPage';
 import DeadlinesPage from './pages/DeadlinesPage';
 import WorkloadPage from './pages/WorkloadPage';
@@ -14,7 +15,7 @@ import AddMenu from './components/AddMenu';
 import './index.css';
 
 function AppShell() {
-  const [page, setPage] = useState('calendar');
+  const [page, setPage] = useState('home');
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [addCourseOpen, setAddCourseOpen] = useState(false);
   const { currentWeekStart } = useApp();
@@ -22,6 +23,7 @@ function AppShell() {
   const weekRange = formatWeekRange(currentWeekStart);
 
   const PAGE_TITLES = {
+    home:      { title: 'StudyFlow',  subtitle: 'Your daily overview' },
     calendar:  { title: 'This Week',  subtitle: weekRange },
     deadlines: { title: 'Deadlines',  subtitle: 'All assignments & deadlines' },
     workload:  { title: 'Workload',   subtitle: 'Study hours — next 6 weeks' },
@@ -48,6 +50,7 @@ function AppShell() {
           className={`flex-1 ${page === 'calendar' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'}`}
           style={page === 'calendar' ? { height: 'calc(100vh - 57px)' } : {}}
         >
+          {page === 'home'      && <HomePage onNavigate={setPage} onAddTask={() => setAddTaskOpen(true)} />}
           {page === 'calendar'  && <CalendarPage onAddTask={() => setAddTaskOpen(true)} />}
           {page === 'deadlines' && <DeadlinesPage onAddTask={() => setAddTaskOpen(true)} />}
           {page === 'workload'  && <WorkloadPage />}

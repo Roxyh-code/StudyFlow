@@ -31,7 +31,7 @@ export default function AddMenu({ onAddTask, onAddCourse }) {
             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
           >
             <Icons.CheckSquare className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-            Add Deadline
+            Add Task
           </button>
           <button
             onClick={() => { onAddCourse(); setOpen(false); }}

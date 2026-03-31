@@ -14,7 +14,10 @@ export default function AddTaskModal({ open, onClose }) {
   });
 
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const isValid = !!(form.title && form.courseId && form.dueDate && form.estimatedHours);
+
+  // Deadline is optional — the only required fields are title + estimatedHours
+  const isValid = !!(form.title && form.estimatedHours);
+  const hasDeadline = !!form.dueDate;
 
   function handleAdd() {
     if (!isValid) return;
@@ -23,12 +26,12 @@ export default function AddTaskModal({ open, onClose }) {
       addTask({
         id: `task-${Date.now()}`,
         title: form.title,
-        courseId: form.courseId,
-        dueDate: form.dueDate,
+        courseId: form.courseId || null,
+        dueDate: form.dueDate || null,          // null = flexible
         estimatedHours: Number(form.estimatedHours),
-        priority: 'medium',
+        priority: hasDeadline ? 'medium' : 'low',
         effortLevel: 'medium',
-        taskType: 'assignment',
+        taskType: hasDeadline ? 'assignment' : 'flexible',
         status: 'not-started',
       });
       setLoading(false);
@@ -43,20 +46,44 @@ export default function AddTaskModal({ open, onClose }) {
   }
 
   return (
-    <Modal open={open} onClose={handleClose} title="Add Deadline" size="sm">
+    <Modal open={open} onClose={handleClose} title="Add Task" size="sm">
       {loading ? (
         <div className="flex flex-col items-center py-10 gap-3">
           <svg className="animate-spin w-8 h-8 text-indigo-500" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
           </svg>
-          <p className="text-sm font-medium text-gray-600">Scheduling study blocks…</p>
-          <p className="text-xs text-gray-400">Finding the best times in your week</p>
+          <p className="text-sm font-medium text-gray-600">
+            {hasDeadline ? 'Scheduling study blocks…' : 'Spreading across your week…'}
+          </p>
+          <p className="text-xs text-gray-400">
+            {hasDeadline ? 'Fitting sessions before your deadline' : 'Finding light days in the next week'}
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
+
+          {/* Mode indicator */}
+          <div className={`flex items-start gap-2.5 rounded-xl px-3 py-2.5 text-xs ${
+            hasDeadline
+              ? 'bg-amber-50 border border-amber-200 text-amber-800'
+              : 'bg-indigo-50 border border-indigo-100 text-indigo-700'
+          }`}>
+            {hasDeadline ? (
+              <Icons.Alert className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500" />
+            ) : (
+              <Icons.Sparkle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-indigo-400" />
+            )}
+            <span>
+              {hasDeadline
+                ? 'AI will split this into study blocks before the deadline.'
+                : 'No deadline — AI will spread sessions flexibly over the next 7 days.'}
+            </span>
+          </div>
+
+          {/* Title */}
           <div>
-            <label className="label">What's due? *</label>
+            <label className="label">Task name *</label>
             <input
               type="text"
               placeholder="e.g. Assignment 3 – Dynamic Programming"
@@ -67,18 +94,21 @@ export default function AddTaskModal({ open, onClose }) {
             />
           </div>
 
+          {/* Course + Deadline */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label">Course *</label>
+              <label className="label">Course <span className="text-gray-400 font-normal">(optional)</span></label>
               <select value={form.courseId} onChange={e => update('courseId', e.target.value)} className="select-field">
-                <option value="">Select course…</option>
+                <option value="">No course</option>
                 {courses.map(c => (
                   <option key={c.id} value={c.id}>{c.code}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="label">Due Date *</label>
+              <label className="label">
+                Deadline <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
               <input
                 type="date"
                 value={form.dueDate}
@@ -88,6 +118,7 @@ export default function AddTaskModal({ open, onClose }) {
             </div>
           </div>
 
+          {/* Hours */}
           <div>
             <label className="label">Hours needed *</label>
             <div className="flex gap-2 flex-wrap">
@@ -127,7 +158,7 @@ export default function AddTaskModal({ open, onClose }) {
               className="flex-1 btn-primary text-sm py-2"
             >
               <Icons.Zap className="w-4 h-4" />
-              Schedule It
+              {hasDeadline ? 'Schedule It' : 'Add to Plan'}
             </button>
           </div>
         </div>

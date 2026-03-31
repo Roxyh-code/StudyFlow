@@ -68,14 +68,14 @@ for (let week = 0; week < 6; week++) {
 // Fri 2026-03-20: Asgn3 DP 9-11 (2h) + PS5 14-16 (2h) = 4h
 // Sat 2026-03-21: G3 Prototype 10-12 (2h)
 const week0StudyBlocks = [
-  { id: 's-w0-1', type: 'study', courseId: 'csc318', assignmentId: 'a1', title: 'G2 Report',    date: '2026-03-16', startHour: 9,  duration: 3 },
-  { id: 's-w0-2', type: 'study', courseId: 'csc318', assignmentId: 'a1', title: 'G2 Report',    date: '2026-03-16', startHour: 16, duration: 2 },
-  { id: 's-w0-3', type: 'study', courseId: 'csc318', assignmentId: 'a1', title: 'G2 Report',    date: '2026-03-17', startHour: 9,  duration: 3 },
-  { id: 's-w0-4', type: 'study', courseId: 'csc343', assignmentId: 'a3', title: 'Lab 4 SQL',    date: '2026-03-18', startHour: 10, duration: 2 },
-  { id: 's-w0-5', type: 'study', courseId: 'csc373', assignmentId: 'a2', title: 'Asgn3 DP',     date: '2026-03-19', startHour: 11, duration: 2 },
-  { id: 's-w0-6', type: 'study', courseId: 'csc373', assignmentId: 'a2', title: 'Asgn3 DP',     date: '2026-03-20', startHour: 9,  duration: 2 },
-  { id: 's-w0-7', type: 'study', courseId: 'mat337', assignmentId: 'a4', title: 'PS5',          date: '2026-03-20', startHour: 14, duration: 2 },
-  { id: 's-w0-8', type: 'study', courseId: 'csc318', assignmentId: 'a5', title: 'G3 Prototype', date: '2026-03-21', startHour: 10, duration: 2 },
+  { id: 's-w0-1', type: 'study', source: 'ai',     courseId: 'csc318', assignmentId: 'a1', title: 'G2 Report',    date: '2026-03-16', startHour: 9,  duration: 3 },
+  { id: 's-w0-2', type: 'study', source: 'ai',     courseId: 'csc318', assignmentId: 'a1', title: 'G2 Report',    date: '2026-03-16', startHour: 16, duration: 2 },
+  { id: 's-w0-3', type: 'study', source: 'ai',     courseId: 'csc318', assignmentId: 'a1', title: 'G2 Report',    date: '2026-03-17', startHour: 9,  duration: 3 },
+  { id: 's-w0-4', type: 'study', source: 'ai',     courseId: 'csc343', assignmentId: 'a3', title: 'Lab 4 SQL',    date: '2026-03-18', startHour: 10, duration: 2 },
+  { id: 's-w0-5', type: 'study', source: 'ai',     courseId: 'csc373', assignmentId: 'a2', title: 'Asgn3 DP',     date: '2026-03-19', startHour: 11, duration: 2 },
+  { id: 's-w0-6', type: 'study', source: 'ai',     courseId: 'csc373', assignmentId: 'a2', title: 'Asgn3 DP',     date: '2026-03-20', startHour: 9,  duration: 2 },
+  { id: 's-w0-7', type: 'study', source: 'manual', courseId: 'mat337', assignmentId: 'a4', title: 'PS5',          date: '2026-03-20', startHour: 14, duration: 2 },
+  { id: 's-w0-8', type: 'study', source: 'ai',     courseId: 'csc318', assignmentId: 'a5', title: 'G3 Prototype', date: '2026-03-21', startHour: 10, duration: 2 },
 ];
 
 // ── Export all blocks ─────────────────────────────────────────────────────────

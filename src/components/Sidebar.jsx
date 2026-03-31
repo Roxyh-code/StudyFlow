@@ -2,9 +2,10 @@ import { Icons } from './Icons';
 import { useApp } from '../context/AppContext';
 
 const navItems = [
+  { id: 'home',       label: 'Home',       Icon: Icons.Home },
   { id: 'calendar',   label: 'This Week',  Icon: Icons.Calendar },
-  { id: 'deadlines',  label: 'Deadlines',  Icon: Icons.CheckSquare },
   { id: 'workload',   label: 'Workload',   Icon: Icons.BarChart },
+  { id: 'deadlines',  label: 'Deadlines',  Icon: Icons.CheckSquare },
 ];
 
 export default function Sidebar({ activePage, onNavigate }) {

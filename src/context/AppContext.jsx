@@ -2,10 +2,11 @@ import { createContext, useContext, useState, useMemo } from 'react';
 import { courses as initialCoursesData, assignments as initialAssignments } from '../data/mockData';
 import { initialBlocks } from '../data/mockData';
 import { addDays, getWeekDates } from '../utils/dateUtils';
-import { applySuggestion } from '../utils/aiUtils';
+import { applySuggestion, smartRebalance } from '../utils/aiUtils';
 import { placeBlocksWithoutOverlap, findFreeSlotsForDay } from '../utils/schedulerUtils';
 
 const BASE_MONDAY = '2026-03-16';
+const EFFECTIVE_TODAY = '2026-03-22'; // simulated "today" throughout the app
 
 export const DEFAULT_PREFERENCES = {
   preferredStudyTime: 'morning',
@@ -28,15 +29,29 @@ function generateStudyBlocks(task, currentWeekStart, existingBlocks, preferences
   const maxSessionHours = effectivePrefs.workloadStyle === 'focused' ? 3 : 2;
   const sessionsNeeded = Math.max(1, Math.ceil(totalHours / maxSessionHours));
 
-  // Gather candidate dates (up to 14 days from today, before due date, skip Sunday if avoidWeekends)
+  // Gather candidate dates
   const candidateDates = [];
-  for (let i = 0; i < 14; i++) {
-    const d = addDays(currentWeekStart, i);
-    if (d >= task.dueDate) break;
-    const dow = new Date(d + 'T00:00:00Z').getUTCDay();
-    if (effectivePrefs.avoidWeekends && (dow === 0 || dow === 6)) continue;
-    if (dow === 0) continue; // always skip Sunday
-    candidateDates.push(d);
+  if (task.dueDate) {
+    // Has deadline: schedule from today up to (but not including) due date
+    for (let i = 0; i < 14; i++) {
+      const d = addDays(currentWeekStart, i);
+      if (d >= task.dueDate) break;
+      const dow = new Date(d + 'T00:00:00Z').getUTCDay();
+      if (effectivePrefs.avoidWeekends && (dow === 0 || dow === 6)) continue;
+      if (dow === 0) continue; // always skip Sunday
+      candidateDates.push(d);
+    }
+  } else {
+    // No deadline: flexible — spread across next 7 weekdays from today
+    let collected = 0;
+    for (let i = 1; i <= 14 && collected < 7; i++) {
+      const d = addDays(EFFECTIVE_TODAY, i);
+      const dow = new Date(d + 'T00:00:00Z').getUTCDay();
+      if (effectivePrefs.avoidWeekends && (dow === 0 || dow === 6)) continue;
+      if (dow === 0) continue;
+      candidateDates.push(d);
+      collected++;
+    }
   }
   if (candidateDates.length === 0) candidateDates.push(currentWeekStart);
 
@@ -57,6 +72,7 @@ function generateStudyBlocks(task, currentWeekStart, existingBlocks, preferences
     rawBlocks.push({
       id: `study-${task.id}-${i}-${Date.now() + i}`,
       type: 'study',
+      source: 'ai',
       courseId: task.courseId,
       assignmentId: task.id,
       title: task.title,
@@ -77,7 +93,18 @@ const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
   const [courses, setCourses] = useState(initialCoursesData);
-  const [blocks, setBlocks] = useState(initialBlocks);
+  // Generate initial blocks: lectures + week-0 mock blocks + auto-scheduled blocks
+  // for longer-horizon tasks (a5, a6) so the heatmap is populated from day one.
+  const [blocks, setBlocks] = useState(() => {
+    const laterTaskIds = ['a5', 'a6'];
+    const laterTasks = initialAssignments.filter(t => laterTaskIds.includes(t.id));
+    let runningBlocks = [...initialBlocks];
+    for (const task of laterTasks) {
+      const generated = generateStudyBlocks(task, BASE_MONDAY, runningBlocks, DEFAULT_PREFERENCES);
+      runningBlocks = [...runningBlocks, ...generated];
+    }
+    return runningBlocks;
+  });
   const [tasks, setTasks] = useState(initialAssignments);
   const [weekOffset, setWeekOffset] = useState(0);
   const [studyPreferences, setStudyPreferences] = useState(DEFAULT_PREFERENCES);
@@ -236,8 +263,41 @@ export function AppProvider({ children }) {
     applyPreferencesAndReschedule(studyPreferences);
   }
 
+  // Replan only AI-generated blocks — manual blocks are preserved
+  function replanAIBlocks() {
+    setBlocks(prev => {
+      const preserved = prev.filter(b => b.type !== 'study' || b.source === 'manual');
+      const activeTasks = tasks.filter(t => t.status !== 'completed');
+      let runningBlocks = [...preserved];
+      const newStudyBlocks = [];
+      for (const task of activeTasks) {
+        const generated = generateStudyBlocks(task, currentWeekStart, runningBlocks, studyPreferences);
+        newStudyBlocks.push(...generated);
+        runningBlocks = [...runningBlocks, ...generated];
+      }
+      return [...preserved, ...newStudyBlocks];
+    });
+  }
+
   function applyAISuggestion(suggestion) {
     setBlocks(prev => applySuggestion(suggestion, prev));
+  }
+
+  // Generate a preview without applying — returns the result object
+  function previewRebalance(options = {}) {
+    return smartRebalance(blocks, tasks, studyPreferences, options);
+  }
+
+  // Apply a pre-computed rebalance result to state
+  function applyRebalanceResult(newBlocks) {
+    setBlocks(newBlocks);
+  }
+
+  // Legacy: compute + apply in one step (used by Home page)
+  function applySmartRebalance() {
+    const result = smartRebalance(blocks, tasks, studyPreferences);
+    if (result.improved) setBlocks(result.blocks);
+    return result;
   }
 
   // ── Preference actions ──────────────────────────────────────────────────────
@@ -266,8 +326,12 @@ export function AppProvider({ children }) {
     completeBlock,
     delayBlock,
     rescheduleAllTasks,
+    replanAIBlocks,
     applyPreferencesAndReschedule,
     applyAISuggestion,
+    previewRebalance,
+    applyRebalanceResult,
+    applySmartRebalance,
     updatePreferences,
   };
 
