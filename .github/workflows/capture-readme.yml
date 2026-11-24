@@ -1,0 +1,54 @@
+name: Capture authentic app screenshots
+on:
+  push:
+    branches: [docs/visual-readme-20261123]
+    paths: [.github/workflows/capture-readme.yml]
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Start app
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock puppeteer-core@24
+          npm run dev -- --host 127.0.0.1 > /tmp/vite.log 2>&1 &
+          for i in $(seq 1 45); do curl -fsS http://127.0.0.1:5173/ > /dev/null && break; sleep 2; done
+      - name: Capture dashboard calendar and workload
+        run: |
+          mkdir -p docs/screenshots
+          node <<'NODE'
+          const p=require('puppeteer-core');
+          (async()=>{
+            const browser=await p.launch({headless:true,executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',args:['--no-sandbox','--disable-dev-shm-usage']});
+            const page=await browser.newPage();await page.setViewport({width:1500,height:950,deviceScaleFactor:1});
+            await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle2'});
+            await page.type('input[autocomplete="username"]','portfolio-demo');
+            await page.type('input[autocomplete="current-password"]','demo-only');
+            await page.click('button[type="submit"]');await page.waitForSelector('aside nav button',{timeout:20000});
+            await new Promise(r=>setTimeout(r,1200));
+            await page.screenshot({path:'docs/screenshots/dashboard.png'});
+            await page.evaluate(()=>{const b=[...document.querySelectorAll('aside nav button')].find(x=>x.innerText.includes('This Week'));if(!b)throw Error('Calendar nav missing');b.click()});
+            await new Promise(r=>setTimeout(r,1500));
+            await page.screenshot({path:'docs/screenshots/weekly-calendar.png'});
+            await page.evaluate(()=>{const b=[...document.querySelectorAll('aside nav button')].find(x=>x.innerText.includes('Workload'));if(!b)throw Error('Workload nav missing');b.click()});
+            await new Promise(r=>setTimeout(r,1600));
+            await page.screenshot({path:'docs/screenshots/workload.png'});
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          file docs/screenshots/*.png
+      - name: Commit screenshot assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots/*.png
+          git diff --cached --quiet && exit 0
+          git commit -m "docs: add authentic browser screenshots for README"
+          git push origin HEAD:docs/visual-readme-20261123
